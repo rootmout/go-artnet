@@ -78,6 +78,7 @@ func NewNode(name string, style code.StyleCode, ip net.IP, log Logger, opts ...N
 		//ip = GenerateIP()
 	}
 	n.Config.IP = ip
+	n.Config.BindIP = net.ParseIP("0.0.0.0")
 	n.localAddr = net.UDPAddr{
 		IP:   ip,
 		Port: packet.ArtNetPort,
@@ -120,7 +121,7 @@ func (n *Node) Start() error {
 	n.shutdownCh = make(chan struct{})
 	n.shutdown = false
 
-	c, err := net.ListenPacket("udp4", fmt.Sprintf(":%d", packet.ArtNetPort))
+	c, err := net.ListenPacket("udp4", fmt.Sprintf("%s:%d", n.Config.BindIP.String(), packet.ArtNetPort))
 	if err != nil {
 		n.shutdownErr = fmt.Errorf("error net.ListenPacket: %s", err)
 		n.log.With(Fields{"error": err}).Error("error net.ListenPacket")
